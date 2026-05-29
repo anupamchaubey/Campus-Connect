@@ -1,38 +1,31 @@
 package com.campus.Campus.Connect.entity;
 
-import com.campus.Campus.Connect.enums.ResourceType;
+import com.campus.Campus.Connect.enums.Difficulty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="resources")
+@Table(name="interviewExperiences")
 @Getter
 @Setter
-public class Resource {
+public class InterviewExperience {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long resourceId;
+    private Long interviewExperienceId;
 
-    private String title;
+    private String companyName;
+
+    private String jobRole;
 
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private ResourceType resourceType;
-
-    private String fileUrl;
-
-    private String semester;
-
-    private String branch;
-
-    private String subject;
-
-    private String college;
+    private Difficulty difficulty;
 
     private LocalDateTime createdAt;
 

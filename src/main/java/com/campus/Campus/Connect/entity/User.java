@@ -1,6 +1,6 @@
 package com.campus.Campus.Connect.entity;
 
-import com.campus.Campus.Connect.Role;
+import com.campus.Campus.Connect.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +15,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
 
     private String name;
 
