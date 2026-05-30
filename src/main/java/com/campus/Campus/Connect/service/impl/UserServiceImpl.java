@@ -9,6 +9,7 @@ import com.campus.Campus.Connect.repository.UserRepository;
 import com.campus.Campus.Connect.service.UserService;
 
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,9 +21,11 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -31,11 +34,7 @@ public class UserServiceImpl implements UserService{
         if(user.isPresent()){
             throw new UserAlreadyExistsException("User already exists");
         }
-        User newUser=new User();
-        newUser.setName(userRequestDTO.getName());
-        newUser.setPassword(userRequestDTO.getPassword());
-        newUser.setEmail(userRequestDTO.getEmail());
-        newUser.setRole(userRequestDTO.getRole());
+        User newUser=dtoToUser(userRequestDTO);
 
         userRepository.save(newUser);
         UserResponseDTO userResponseDTO=userToDTO(newUser);
@@ -88,7 +87,7 @@ public class UserServiceImpl implements UserService{
 
         existingUser.setName(dto.getName());
         existingUser.setRole(dto.getRole());
-        existingUser.setPassword(dto.getPassword());
+        existingUser.setPassword(passwordEncoder.encode(dto.getPassword()));
         existingUser.setEmail(dto.getEmail());
 
         userRepository.save(existingUser);
@@ -97,6 +96,15 @@ public class UserServiceImpl implements UserService{
     }
 
     // DTO mapper functions
+
+    private User dtoToUser(UserRequestDTO userRequestDTO) {
+        User newUser=new User();
+        newUser.setName(userRequestDTO.getName());
+        newUser.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
+        newUser.setEmail(userRequestDTO.getEmail());
+        newUser.setRole(userRequestDTO.getRole());
+        return newUser;
+    }
 
     private UserResponseDTO userToDTO(User user){
         UserResponseDTO userResponseDTO=new UserResponseDTO();

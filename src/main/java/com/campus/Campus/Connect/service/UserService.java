@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface UserService {
 
-    UserResponseDTO createUser(UserRequestDTO userRequestDTO) throws Exception;
+    UserResponseDTO createUser(UserRequestDTO userRequestDTO);
 
     List<UserResponseDTO> getAllUsers();
 
-    UserResponseDTO getUserById(Long userId) throws Exception;
+    UserResponseDTO getUserById(Long userId);
 
-    void deleteUser(Long userId) throws Exception;
+    void deleteUser(Long userId);
 
-    UserResponseDTO updateUser(Long userId, UserRequestDTO dto) throws Exception;
+    UserResponseDTO updateUser(Long userId, UserRequestDTO dto);
 }
