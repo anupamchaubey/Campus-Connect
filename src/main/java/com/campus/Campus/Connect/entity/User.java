@@ -4,6 +4,7 @@ import com.campus.Campus.Connect.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -17,21 +18,20 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @Column(nullable = false)
     private String name;
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @PrePersist
-    public void setCreatedAt(){
-        this.createdAt = LocalDateTime.now();
-    }
 
 }

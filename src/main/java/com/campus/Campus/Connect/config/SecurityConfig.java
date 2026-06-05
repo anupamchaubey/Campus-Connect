@@ -27,7 +27,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+            HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
 
         return http
                 .csrf(csrf -> csrf.disable())
@@ -35,6 +35,8 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
+
+                .authenticationProvider(authenticationProvider)
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**")
