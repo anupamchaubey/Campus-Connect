@@ -3,12 +3,15 @@ package com.campus.Campus.Connect.service.impl;
 import com.campus.Campus.Connect.dto.ResourceFilterDTO;
 import com.campus.Campus.Connect.dto.ResourceRequestDTO;import com.campus.Campus.Connect.dto.ResourceResponseDTO;import com.campus.Campus.Connect.entity.Resource;import com.campus.Campus.Connect.entity.User;import com.campus.Campus.Connect.enums.Role;import com.campus.Campus.Connect.exceptions.AccessDeniedException;import com.campus.Campus.Connect.exceptions.ResourceNotFoundException;import com.campus.Campus.Connect.repository.ResourceRepository;import com.campus.Campus.Connect.repository.UserRepository;import com.campus.Campus.Connect.service.ResourceService;
 import com.campus.Campus.Connect.specification.ResourceSpecification;
-import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.context.SecurityContext;import org.springframework.security.core.context.SecurityContextHolder;import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;import java.util.stream.Collectors;
+import java.util.Set;
+
 
 @Service
 public class ResourceServiceImpl implements ResourceService {
@@ -83,14 +86,6 @@ public class ResourceServiceImpl implements ResourceService {
         return resourceToResourceResponseDTO(resource);
     }
 
-    @Override
-    public List<ResourceResponseDTO> getAllResources() {
-
-        return resourceRepository.findAll()
-                .stream()
-                .map(this::resourceToResourceResponseDTO)
-                .collect(Collectors.toList());
-    }
 
     @Override
     public ResourceResponseDTO updateResource(
@@ -148,17 +143,34 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("User not found"));
     }
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of(
+                    "createdAt",
+                    "updatedAt",
+                    "title",
+                    "subject",
+                    "resourceType"
+            );
 
     @Override
-    public List<ResourceResponseDTO> getResources(ResourceFilterDTO resourceFilterDTO) {
+    public Page<ResourceResponseDTO> getResources(ResourceFilterDTO resourceFilterDTO, int page, int size, String sortBy, String sortDirection) {
         Specification<Resource> spec=ResourceSpecification.filterResources(resourceFilterDTO);
-
-        List<Resource> resources = resourceRepository.findAll(spec);
-
-        List<ResourceResponseDTO> dtos=new ArrayList<>();
-        for (Resource resource : resources) {
-            dtos.add(resourceToResourceResponseDTO(resource));
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new IllegalArgumentException(
+                    "Invalid sort field"
+            );
         }
-        return dtos;
+        Sort sort;
+        if(sortDirection.equalsIgnoreCase("asc")){
+            sort= Sort.by(sortBy).ascending();
+        }else{
+            sort= Sort.by(sortBy).descending();
+        }
+        Pageable pageable= PageRequest.of(page, size, sort);
+        Page<Resource> resources = resourceRepository.findAll(spec, pageable);
+
+        return resources.map(
+                resource -> resourceToResourceResponseDTO(resource)
+        );
     }
 }

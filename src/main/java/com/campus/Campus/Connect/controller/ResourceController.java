@@ -7,6 +7,7 @@ import com.campus.Campus.Connect.entity.Resource;
 import com.campus.Campus.Connect.service.ResourceService;
 import com.campus.Campus.Connect.specification.ResourceSpecification;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,11 @@ public class ResourceController {
     }
 
     @GetMapping
-    public List<ResourceResponseDTO> getResources(ResourceFilterDTO resourceFilterDTO) {
-        return resourceService.getResources(resourceFilterDTO);
+    public Page<ResourceResponseDTO> getResources(ResourceFilterDTO resourceFilterDTO,
+                                                  @RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "10") int size,
+                                                  @RequestParam(defaultValue = "createdAt") String sortBy,
+                                                  @RequestParam(defaultValue = "desc") String sortDirection ) {
+        return resourceService.getResources(resourceFilterDTO, page, size, sortBy, sortDirection);
     }
 }
