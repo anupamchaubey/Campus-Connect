@@ -69,31 +69,21 @@ public class CloudinaryService {
         }
     }
 
-    private void validateFile(
-            MultipartFile file
-    ) {
-
+    private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-
-            throw new FileUploadException(
-                    "File cannot be empty"
-            );
+            throw new FileUploadException("File cannot be empty");
         }
-
         if (file.getSize() > MAX_FILE_SIZE) {
-
-            throw new FileUploadException(
-                    "File size exceeds 10 MB"
-            );
+            throw new FileUploadException("File size exceeds 10 MB");
         }
 
-        if (!"application/pdf".equals(
-                file.getContentType()
-        )) {
-
-            throw new FileUploadException(
-                    "Only PDF files are allowed"
-            );
+        // Allow PDFs, Images, and basic documents
+        String contentType = file.getContentType();
+        if (contentType == null || !(
+                contentType.equals("application/pdf") ||
+                        contentType.startsWith("image/") ||
+                        contentType.equals("application/zip"))) {
+            throw new FileUploadException("Only PDFs, images, and ZIP files are allowed");
         }
     }
 }

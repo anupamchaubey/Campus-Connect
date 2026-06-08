@@ -4,7 +4,6 @@ import com.campus.Campus.Connect.enums.Difficulty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
@@ -13,19 +12,21 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class InterviewExperience {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long interviewExperienceId;
 
     private String companyName;
-
     private String jobRole;
-
     private String description;
 
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
+
+    // ADD THIS: Missing relationship
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="posted_by", nullable = false)
+    private User postedBy;
 
     private LocalDateTime createdAt;
 
@@ -33,5 +34,4 @@ public class InterviewExperience {
     private void setCreatedAt() {
         this.createdAt = LocalDateTime.now();
     }
-
 }

@@ -7,6 +7,7 @@ import com.campus.Campus.Connect.exceptions.ResourceNotFoundException;import com
 import com.campus.Campus.Connect.service.CloudinaryService;
 import com.campus.Campus.Connect.service.ResourceService;
 import com.campus.Campus.Connect.specification.ResourceSpecification;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -98,6 +99,7 @@ public class ResourceServiceImpl implements ResourceService {
 
 
     @Override
+    @Transactional
     public ResourceResponseDTO updateResource(
             Long resourceId,
             ResourceRequestDTO resourceRequestDTO,
@@ -116,21 +118,17 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         if (file != null && !file.isEmpty()) {
+            String oldPublicId = resource.getPublicId(); // Save old ID
 
-            cloudinaryService.deleteFile(
-                    resource.getPublicId()
-            );
+            // Upload new file FIRST before deleting the old one
+            FileUploadResponse uploadResult = cloudinaryService.uploadFile(file);
+            resource.setFileUrl(uploadResult.getFileUrl());
+            resource.setPublicId(uploadResult.getPublicId());
 
-            FileUploadResponse uploadResult =
-                    cloudinaryService.uploadFile(file);
-
-            resource.setFileUrl(
-                    uploadResult.getFileUrl()
-            );
-
-            resource.setPublicId(
-                    uploadResult.getPublicId()
-            );
+            // Safely delete the old file only after successful new upload
+            if (oldPublicId != null) {
+                cloudinaryService.deleteFile(oldPublicId);
+            }
         }
 
         resource.setTitle(resourceRequestDTO.getTitle());
@@ -147,22 +145,19 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional
     public void deleteResourceById(Long resourceId) {
-
         Resource resource = resourceRepository.findById(resourceId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Resource not found with id: " + resourceId));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
         User resourceUser = resource.getUploader();
-
         User loggedInUser = getCurrentUser();
-        if (resourceUser.getUserId().equals(loggedInUser.getUserId()) || loggedInUser.getRole() == Role.ADMIN) {
-            cloudinaryService.deleteFile(
-                    resource.getPublicId()
-            );
 
-            resourceRepository.delete(resource);
-        } else throw new AccessDeniedException("You are not allowed to perform this action");
+        if (resourceUser.getUserId().equals(loggedInUser.getUserId()) || loggedInUser.getRole() == Role.ADMIN) {
+            resourceRepository.delete(resource); // Delete from DB first
+            cloudinaryService.deleteFile(resource.getPublicId()); // Then delete from Cloudinary
+        } else {
+            throw new AccessDeniedException("You are not allowed to perform this action");
+        }
     }
 
     private User getCurrentUser() {
