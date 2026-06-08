@@ -8,7 +8,10 @@ import com.campus.Campus.Connect.dto.ResourceResponseDTO;
 import com.campus.Campus.Connect.entity.Resource;
 import com.campus.Campus.Connect.service.ResourceService;
 import com.campus.Campus.Connect.specification.ResourceSpecification;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/resources")
@@ -24,13 +28,12 @@ public class ResourceController {
 
     private final ResourceService resourceService;
     private final ObjectMapper objectMapper;
+    private final Validator validator; // Inject Validator
 
-    public ResourceController(
-            ResourceService resourceService,
-            ObjectMapper objectMapper) {
-
+    public ResourceController(ResourceService resourceService, ObjectMapper objectMapper, Validator validator) {
         this.resourceService = resourceService;
         this.objectMapper = objectMapper;
+        this.validator = validator;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -38,15 +41,15 @@ public class ResourceController {
             @RequestPart("resource") String resourceJson,
             @RequestPart("file") MultipartFile file) throws Exception {
 
-        ResourceRequestDTO dto =
-                objectMapper.readValue(
-                        resourceJson,
-                        ResourceRequestDTO.class
-                );
+        ResourceRequestDTO dto = objectMapper.readValue(resourceJson, ResourceRequestDTO.class);
 
-        return ResponseEntity.ok(
-                resourceService.createResource(dto, file)
-        );
+        // Manually validate the DTO
+        Set<ConstraintViolation<ResourceRequestDTO>> violations = validator.validate(dto);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+
+        return ResponseEntity.ok(resourceService.createResource(dto, file));
     }
 
     @GetMapping("/{id}")
