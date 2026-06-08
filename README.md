@@ -277,33 +277,30 @@ This project demonstrates:
 * Production Deployment
 
 ---
-
 ## API Endpoints
 
 ### Authentication
-
-| Method | Endpoint       |
-| ------ | -------------- |
-| POST   | /auth/register |
-| POST   | /auth/login    |
+| Method | Endpoint |
+| ------ | -------- |
+| POST | `/auth/register` |
+| POST | `/auth/login` |
 
 ### Resources
-
-| Method | Endpoint        |
-| ------ | --------------- |
-| POST   | /resources      |
-| GET    | /resources      |
-| GET    | /resources/{id} |
-| DELETE | /resources/{id} |
+| Method | Endpoint |
+| ------ | -------- |
+| POST | `/resources` |
+| GET | `/resources` |
+| GET | `/resources/{id}` |
+| PUT | `/resources/{id}` |
+| DELETE | `/resources/{id}` |
 
 ### Interview Experiences
-
-| Method | Endpoint         |
-| ------ | ---------------- |
-| POST   | /interviews      |
-| GET    | /interviews      |
-| GET    | /interviews/{id} |
-| DELETE | /interviews/{id} |
+| Method | Endpoint |
+| ------ | -------- |
+| POST | `/interviews` |
+| GET | `/interviews` |
+| GET | `/interviews/{id}` |
+| DELETE | `/interviews/{id}` |
 
 ---
 
@@ -359,6 +356,7 @@ http://localhost:8080/swagger-ui/index.html
 * Java 17+
 * Maven
 * MySQL
+* Cloudinary Account
 
 ### Clone Repository
 
@@ -371,9 +369,14 @@ git clone https://github.com/anupamchaubey/Campus-Connect.git
 Update application.properties:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/campusconnect
-spring.datasource.username=YOUR_USERNAME
-spring.datasource.password=YOUR_PASSWORD
+DB_URL=jdbc:mysql://localhost:3306/campusconnect
+DB_USERNAME=root
+DB_PASSWORD=your_mysql_password
+
+JWT_SECRET=your_super_secret_jwt_key_make_it_long
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ### Run Application
