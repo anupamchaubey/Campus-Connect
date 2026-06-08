@@ -5,21 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.campus.Campus.Connect.dto.ResourceFilterDTO;
 import com.campus.Campus.Connect.dto.ResourceRequestDTO;
 import com.campus.Campus.Connect.dto.ResourceResponseDTO;
-import com.campus.Campus.Connect.entity.Resource;
 import com.campus.Campus.Connect.service.ResourceService;
-import com.campus.Campus.Connect.specification.ResourceSpecification;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -28,7 +23,7 @@ public class ResourceController {
 
     private final ResourceService resourceService;
     private final ObjectMapper objectMapper;
-    private final Validator validator; // Inject Validator
+    private final Validator validator;
 
     public ResourceController(ResourceService resourceService, ObjectMapper objectMapper, Validator validator) {
         this.resourceService = resourceService;
@@ -43,7 +38,6 @@ public class ResourceController {
 
         ResourceRequestDTO dto = objectMapper.readValue(resourceJson, ResourceRequestDTO.class);
 
-        // Manually validate the DTO
         Set<ConstraintViolation<ResourceRequestDTO>> violations = validator.validate(dto);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
@@ -64,20 +58,17 @@ public class ResourceController {
     public ResourceResponseDTO updateResource(
             @PathVariable Long resourceId,
             @RequestPart("resource") String resourceJson,
-            @RequestPart(value = "file", required = false)
-            MultipartFile file
-    ) throws JsonProcessingException {
-        ResourceRequestDTO dto =
-                objectMapper.readValue(
-                        resourceJson,
-                        ResourceRequestDTO.class
-                );
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) throws Exception {
+        ResourceRequestDTO dto = objectMapper.readValue(resourceJson, ResourceRequestDTO.class);
 
-        return resourceService.updateResource(
-                resourceId,
-                dto,
-                file
-        );
+        // SECURITY FIX: Manual validation check for updates
+        Set<ConstraintViolation<ResourceRequestDTO>> violations = validator.validate(dto);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+
+        return resourceService.updateResource(resourceId, dto, file);
     }
 
     @DeleteMapping("/{resourceId}")
