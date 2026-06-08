@@ -42,4 +42,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> accessDenied(AccessDeniedException ex){
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
+
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<String> fileUploadException(FileUploadException ex){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
 }

@@ -49,4 +49,7 @@ public class Resource {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private String publicId;
 }

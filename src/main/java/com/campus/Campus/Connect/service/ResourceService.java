@@ -6,17 +6,18 @@ import com.campus.Campus.Connect.dto.ResourceResponseDTO;
 import com.campus.Campus.Connect.entity.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface ResourceService {
 
-    ResourceResponseDTO createResource(ResourceRequestDTO resourceRequestDTO);
+    ResourceResponseDTO createResource(ResourceRequestDTO resourceRequestDTO,  MultipartFile file);
 
     ResourceResponseDTO getResourceById(Long resourceId);
 
     ResourceResponseDTO updateResource(Long resourceId,
-                                       ResourceRequestDTO resourceRequestDTO);
+                                       ResourceRequestDTO resourceRequestDTO,  MultipartFile file);
 
     void deleteResourceById(Long resourceId);
 

@@ -1,7 +1,11 @@
 package com.campus.Campus.Connect.service.impl;
 
+import com.campus.Campus.Connect.dto.FileUploadResponse;
 import com.campus.Campus.Connect.dto.ResourceFilterDTO;
-import com.campus.Campus.Connect.dto.ResourceRequestDTO;import com.campus.Campus.Connect.dto.ResourceResponseDTO;import com.campus.Campus.Connect.entity.Resource;import com.campus.Campus.Connect.entity.User;import com.campus.Campus.Connect.enums.Role;import com.campus.Campus.Connect.exceptions.AccessDeniedException;import com.campus.Campus.Connect.exceptions.ResourceNotFoundException;import com.campus.Campus.Connect.repository.ResourceRepository;import com.campus.Campus.Connect.repository.UserRepository;import com.campus.Campus.Connect.service.ResourceService;
+import com.campus.Campus.Connect.dto.ResourceRequestDTO;import com.campus.Campus.Connect.dto.ResourceResponseDTO;import com.campus.Campus.Connect.entity.Resource;import com.campus.Campus.Connect.entity.User;import com.campus.Campus.Connect.enums.Role;import com.campus.Campus.Connect.exceptions.AccessDeniedException;
+import com.campus.Campus.Connect.exceptions.ResourceNotFoundException;import com.campus.Campus.Connect.repository.ResourceRepository;import com.campus.Campus.Connect.repository.UserRepository;
+import com.campus.Campus.Connect.service.CloudinaryService;
+import com.campus.Campus.Connect.service.ResourceService;
 import com.campus.Campus.Connect.specification.ResourceSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Set;
 
@@ -18,10 +23,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
 
-    public ResourceServiceImpl(ResourceRepository resourceRepository, UserRepository userRepository) {
+    public ResourceServiceImpl(ResourceRepository resourceRepository, UserRepository userRepository, CloudinaryService cloudinaryService) {
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     private Resource resourceRequestDTOToResource(ResourceRequestDTO dto) {
@@ -31,7 +38,6 @@ public class ResourceServiceImpl implements ResourceService {
         resource.setTitle(dto.getTitle());
         resource.setDescription(dto.getDescription());
         resource.setResourceType(dto.getResourceType());
-        resource.setFileUrl(dto.getFileUrl());
         resource.setSemester(dto.getSemester());
         resource.setBranch(dto.getBranch());
         resource.setSubject(dto.getSubject());
@@ -66,10 +72,14 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public ResourceResponseDTO createResource(
-            ResourceRequestDTO resourceRequestDTO) {
+            ResourceRequestDTO resourceRequestDTO, MultipartFile file) {
+        FileUploadResponse uploadResult =
+                cloudinaryService.uploadFile(file);
 
         Resource resource = resourceRequestDTOToResource(resourceRequestDTO);
         resource.setUploader(getCurrentUser());
+        resource.setFileUrl(uploadResult.getFileUrl());
+        resource.setPublicId(uploadResult.getPublicId());
         Resource savedResource = resourceRepository.save(resource);
 
         return resourceToResourceResponseDTO(savedResource);
@@ -90,7 +100,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public ResourceResponseDTO updateResource(
             Long resourceId,
-            ResourceRequestDTO resourceRequestDTO) {
+            ResourceRequestDTO resourceRequestDTO,
+            MultipartFile file) {
 
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() ->
@@ -104,10 +115,27 @@ public class ResourceServiceImpl implements ResourceService {
             throw new AccessDeniedException("You are not authorized to perform this action.");
         }
 
+        if (file != null && !file.isEmpty()) {
+
+            cloudinaryService.deleteFile(
+                    resource.getPublicId()
+            );
+
+            FileUploadResponse uploadResult =
+                    cloudinaryService.uploadFile(file);
+
+            resource.setFileUrl(
+                    uploadResult.getFileUrl()
+            );
+
+            resource.setPublicId(
+                    uploadResult.getPublicId()
+            );
+        }
+
         resource.setTitle(resourceRequestDTO.getTitle());
         resource.setDescription(resourceRequestDTO.getDescription());
         resource.setResourceType(resourceRequestDTO.getResourceType());
-        resource.setFileUrl(resourceRequestDTO.getFileUrl());
         resource.setSemester(resourceRequestDTO.getSemester());
         resource.setBranch(resourceRequestDTO.getBranch());
         resource.setSubject(resourceRequestDTO.getSubject());
@@ -129,6 +157,10 @@ public class ResourceServiceImpl implements ResourceService {
 
         User loggedInUser = getCurrentUser();
         if (resourceUser.getUserId().equals(loggedInUser.getUserId()) || loggedInUser.getRole() == Role.ADMIN) {
+            cloudinaryService.deleteFile(
+                    resource.getPublicId()
+            );
+
             resourceRepository.delete(resource);
         } else throw new AccessDeniedException("You are not allowed to perform this action");
     }

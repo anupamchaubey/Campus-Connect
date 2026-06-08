@@ -1,5 +1,7 @@
 package com.campus.Campus.Connect.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.campus.Campus.Connect.dto.ResourceFilterDTO;
 import com.campus.Campus.Connect.dto.ResourceRequestDTO;
 import com.campus.Campus.Connect.dto.ResourceResponseDTO;
@@ -9,8 +11,10 @@ import com.campus.Campus.Connect.specification.ResourceSpecification;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,14 +23,30 @@ import java.util.List;
 public class ResourceController {
 
     private final ResourceService resourceService;
+    private final ObjectMapper objectMapper;
 
-    public ResourceController(ResourceService resourceService) {
+    public ResourceController(
+            ResourceService resourceService,
+            ObjectMapper objectMapper) {
+
         this.resourceService = resourceService;
+        this.objectMapper = objectMapper;
     }
 
-    @PostMapping
-    public ResourceResponseDTO create(@RequestBody @Valid ResourceRequestDTO dto) {
-        return resourceService.createResource(dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResourceResponseDTO> create(
+            @RequestPart("resource") String resourceJson,
+            @RequestPart("file") MultipartFile file) throws Exception {
+
+        ResourceRequestDTO dto =
+                objectMapper.readValue(
+                        resourceJson,
+                        ResourceRequestDTO.class
+                );
+
+        return ResponseEntity.ok(
+                resourceService.createResource(dto, file)
+        );
     }
 
     @GetMapping("/{id}")
@@ -34,9 +54,27 @@ public class ResourceController {
         return resourceService.getResourceById(id);
     }
 
-    @PutMapping("/{resourceId}")
-    public ResourceResponseDTO updateResource(@PathVariable Long resourceId ,@RequestBody @Valid ResourceRequestDTO dto) {
-        return resourceService.updateResource(resourceId, dto);
+    @PutMapping(
+            value = "/{resourceId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResourceResponseDTO updateResource(
+            @PathVariable Long resourceId,
+            @RequestPart("resource") String resourceJson,
+            @RequestPart(value = "file", required = false)
+            MultipartFile file
+    ) throws JsonProcessingException {
+        ResourceRequestDTO dto =
+                objectMapper.readValue(
+                        resourceJson,
+                        ResourceRequestDTO.class
+                );
+
+        return resourceService.updateResource(
+                resourceId,
+                dto,
+                file
+        );
     }
 
     @DeleteMapping("/{resourceId}")

@@ -20,9 +20,6 @@ public class ResourceRequestDTO {
     @NotNull
     private ResourceType resourceType;
 
-    @NotBlank
-    private String fileUrl;
-
     private String semester;
 
     @NotBlank

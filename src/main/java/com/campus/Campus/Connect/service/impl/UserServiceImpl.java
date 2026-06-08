@@ -5,7 +5,9 @@ import com.campus.Campus.Connect.dto.UserResponseDTO;
 import com.campus.Campus.Connect.entity.User;
 import com.campus.Campus.Connect.exceptions.ResourceNotFoundException;
 import com.campus.Campus.Connect.exceptions.UserAlreadyExistsException;
+import com.campus.Campus.Connect.repository.ResourceRepository;
 import com.campus.Campus.Connect.repository.UserRepository;
+import com.campus.Campus.Connect.service.CloudinaryService;
 import com.campus.Campus.Connect.service.UserService;
 
 import jakarta.transaction.Transactional;
@@ -22,10 +24,19 @@ public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ResourceRepository resourceRepository;
+    private final CloudinaryService cloudinaryService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            ResourceRepository resourceRepository,
+            CloudinaryService cloudinaryService
+    ){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.resourceRepository = resourceRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Override
