@@ -4,6 +4,8 @@ import com.campus.Campus.Connect.enums.Difficulty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +28,7 @@ public class InterviewExperience {
     // ADD THIS: Missing relationship
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="posted_by", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User postedBy;
 
     private LocalDateTime createdAt;
