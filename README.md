@@ -1,6 +1,6 @@
 # CampusConnect
 
-A full-stack campus resource sharing and interview preparation platform built using **Java, Spring Boot, Spring Security, JWT, JPA/Hibernate, MySQL, React, and Cloudinary**.
+Backend of campus resource sharing and interview preparation platform built using **Java, Spring Boot, Spring Security, JWT, JPA/Hibernate, MySQL, and Cloudinary**.
 
 CampusConnect helps students discover academic resources, share interview experiences, and connect with their college community through a secure and scalable platform.
 
@@ -130,11 +130,6 @@ Administrators can:
 
 * Cloudinary
 
-### Frontend
-
-* React
-* Tailwind CSS
-
 ### API Documentation
 
 * Swagger / OpenAPI
@@ -143,18 +138,10 @@ Administrators can:
 
 * Maven
 
-### Deployment
-
-* Backend: Render / Railway
-* Frontend: Vercel
-* Database: Railway MySQL
-
----
-
 ## Architecture
 
 ```text
-Client (React)
+    Client 
        |
        v
 REST Controllers
