@@ -20,12 +20,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public UserResponseDTO createUser(
-            @Valid @RequestBody UserRequestDTO userRequestDTO) {
-
-        return userService.createUser(userRequestDTO);
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping

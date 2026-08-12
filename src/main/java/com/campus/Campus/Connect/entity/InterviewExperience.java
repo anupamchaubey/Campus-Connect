@@ -20,6 +20,9 @@ public class InterviewExperience {
 
     private String companyName;
     private String jobRole;
+
+    @Lob
+    @Column(columnDefinition = "Text")
     private String description;
 
     @Enumerated(EnumType.STRING)
