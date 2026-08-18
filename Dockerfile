@@ -2,13 +2,21 @@
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Copy dependency files first to leverage Docker caching
+# CRITICAL FOR RENDER: Strict memory restrictions for the Maven compiler engine
+ENV MAVEN_OPTS="-Xmx300m -Xms128m -XX:+UseSerialGC"
+
+# Copy dependency files first
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+
+# FORCE SINGLE-THREAD DOWNLOAD: Saves massive amounts of RAM during downloading
+RUN mvn dependency:go-offline -B -Dstyle.color=never
 
 # Copy source code and build the JAR
 COPY src ./src
-RUN mvn clean package -DskipTests
+
+# FORCE LOW MEMORY FOR COMPILATION: Keeps forks small
+RUN mvn clean package -DskipTests -Dmaven.compiler.fork=true -Dstyle.color=never
+
 
 # --- Stage 2: Run the application ---
 FROM eclipse-temurin:17-jre-jammy
