@@ -4,17 +4,17 @@
 FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
 
-# Copy Maven wrapper and configuration files first (for better layer caching)
+# Copy Maven wrapper files and pom.xml
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 
-# Download dependencies (cached if pom.xml doesn't change)
+# Download dependencies using the wrapper
 RUN ./mvnw dependency:go-offline -B
 
-# Copy the source code
+# Copy source code
 COPY src ./src
 
-# Build the application (skipping tests for speed)
+# Build the application using the Maven Wrapper (guarantees Java 21 compilation)
 RUN ./mvnw clean package -DskipTests -Dmaven.compiler.fork=true -Dstyle.color=never
 
 # ==========================================
@@ -26,6 +26,5 @@ WORKDIR /app
 # Copy the built jar from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port and configure container limits
 EXPOSE 8080
 ENTRYPOINT ["java", "-Xmx400m", "-Xms200m", "-jar", "app.jar"]
