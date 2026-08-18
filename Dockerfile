@@ -1,4 +1,4 @@
-# Use a lightweight JRE runtime environment directly
+# Use a lightweight runtime environment directly
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
