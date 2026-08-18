@@ -1,5 +1,7 @@
 # CampusConnect
 
+**🚀 Live API Swagger Documentation:** [https://campus-connect-tiiw.onrender.com/swagger-ui/index.html](https://campus-connect-tiiw.onrender.com/swagger-ui/index.html)
+
 Backend of campus resource sharing and interview preparation platform built using **Java, Spring Boot, Spring Security, JWT, JPA/Hibernate, MySQL, and Cloudinary**.
 
 CampusConnect helps students discover academic resources, share interview experiences, and connect with their college community through a secure and scalable platform.
